@@ -1,0 +1,259 @@
+/*essential header files*/
+#include<stdlib.h>
+#include<fstream.h>
+#include<process.h>
+#include<iostream.h>
+#include<conio.h>
+#include<string.h>
+#include<stdio.h>
+#include<ctype.h>
+/*functions declarations*/
+void search_rec(unsigned long);
+void del_rec(unsigned long);
+void modify_rec(unsigned long);
+/*class defination*/
+class contact_record
+{
+  char name[50];
+  unsigned long recno;
+  long double phoneno;
+  char emailid[100];
+  char address[50];
+  char cityname[50];
+  unsigned long int pincode;
+  public:
+	 void in_rec();
+	 void out_rec(unsigned long);
+	 void mod_rec(unsigned long);
+	 unsigned long return_recno()
+	 {
+	   return recno;
+	 }
+}ob1;
+//To enter a record
+void contact_record::in_rec()
+{
+   cout<<"\nEnter record number :- ";
+   cin>>recno;
+   cout<<"\nEnter details of person :- \n\tName :- ";
+   gets(name);
+   cout<<"\tPhone number :- ";
+   cin>>phoneno;
+   cout<<"\tEmail id :- ";
+   gets(emailid);
+   cout<<"\tAddress :- ";
+   gets(address);
+   cout<<"\tResidence city name :- ";
+   gets(cityname);
+   cout<<"\tCity pincode :- ";
+   cin>>pincode;
+}
+//To display a record
+void contact_record::out_rec(unsigned long rno)
+{
+  char found='n';
+  ifstream fin;
+  fin.open("Contact_info",ios::in|ios::binary);
+  while(!(fin.eof()))
+  {
+    fin.read((char*)&ob1,sizeof(ob1));
+    if(ob1.return_recno()==rno)
+    {
+      clrscr();
+      found='y';
+      cout<<"Details are :- ";
+      cout<<"\nName :- "<<ob1.name;
+      cout<<"\nRecord number :- "<<ob1.recno;
+      cout<<"\nPhone number :- "<<ob1.phoneno;
+      cout<<"\nEmail ID :- "<<ob1.emailid;
+      cout<<"\nAddress :- "<<ob1.address;
+      cout<<"\nCity name :- "<<ob1.cityname;
+      cout<<"\nCity pincode :- "<<ob1.pincode;
+    }
+  }
+  if(found=='n')
+		cout<<"Record not found";
+}
+//To search for a record
+void search_rec(unsigned long rno)
+{
+  ifstream fin;
+  cout<<"SEARCH";
+  fin.open("Contact_info",ios::in|ios::binary);
+  int found=0;
+  fin.seekg(0);
+  while(!(fin.eof()))
+  {
+    fin.read((char*)&ob1,sizeof(ob1));
+    if(ob1.return_recno()==rno)
+    {
+      found=1;
+      cout<<"Record Found!!!\n";
+      ob1.out_rec(rno);
+      break;
+    }
+  }
+  if(found==0)
+	cout<<"\n!!!Record not found!!!";
+}
+//To delete a record
+void del_rec(unsigned long rno)
+{
+  unsigned long rn;
+  ifstream fin;
+  fin.open("Contact_info",ios::in|ios::binary);
+  ofstream fout;
+  fout.open("TMP",ios::out|ios::binary);
+  while(!(fin.eof()))
+  {
+    fin.read((char*)&ob1,sizeof(ob1));
+    rn=ob1.return_recno();
+    if(rn!=rno)
+    {
+      fout.write((char*)&ob1,sizeof(ob1));
+    }
+  }
+  fin.close();
+  fout.close();
+  remove("Contact_info");
+  rename("TMP","Contact_info");
+  cout<<"Record successfully deleted!!!!\n";
+}
+//To modify a record
+void contact_record::mod_rec(unsigned long rno)
+{
+	char a;
+	char b[50];
+	unsigned long c;
+	unsigned long int d;
+	cout<<"Original details are:-";
+	ob1.out_rec(rno);
+	cout<<"Enter new details :- ";
+	cout<<"Name(.to retain original value): ";
+	gets(b);
+	if(strcmp(b,"."))
+	{
+	  strcpy(ob1.name,b);
+	}
+	cout<<"phone number (0 to retain original) :- ";
+	cin>>c;
+	if(c!=0)
+	{
+	  ob1.phoneno=c;
+	}
+	cout<<"Email ID (.to retain original value):- ";
+	gets(b);
+	if(strcmp(b,"."))
+	{
+	  strcpy(ob1.emailid,b);
+	}
+	cout<<"Address(.to retain original value):- ";
+	gets(b);
+	if(strcmp(b,"."))
+	{
+	  strcpy(ob1.address,b);
+	}
+	cout<<"City Name(.to retain original value) :- ";
+	gets(b);
+	if(strcmp(b,"."))
+	{
+	  strcpy(ob1.cityname,b);
+	}
+	cout<<"City pincode(0 to retain original value) :- ";
+	cin>>d;
+	if(d!=0)
+	{
+	  ob1.pincode=d;
+	}
+	ob1.recno=rno;
+}
+//To modify a record
+void modify_rec(unsigned long rno)
+{
+  int pos;
+  fstream fin;
+  fin.open("Contact_info",ios::out|ios::in|ios::binary);
+  while(!(fin.eof()))
+  {
+    pos=fin.tellg();
+    fin.read((char*)&ob1,sizeof(ob1));
+    if(ob1.return_recno()==rno)
+    {
+       ob1.mod_rec(rno);
+       fin.seekg(pos);
+       fin.write((char*)&ob1,sizeof(ob1));
+       break;
+    }
+  }
+  fin.close();
+}
+void main()
+{
+  clrscr();
+  char y;
+  int ch;
+  contact_record s1;
+  unsigned long recordno;
+  int choice;
+  cout<<"CONTACT INFORMATION SYSTEM\n ";
+  start:
+  cout<<"\t1)Search a existing record \n";
+  cout<<"\t2)Insert a record \n";
+  cout<<"\t3)Delete a record\n";
+  cout<<"\t4)Modify a record\n";
+  cout<<"\t5)Exit\n";
+  cout<<"\t\tEnter your choice(1-5)";
+  cin>>choice;
+  switch(choice)
+  {
+    case 1:
+	    /*For searching a record*/
+	    cout<<"Enter record number to be searched for :- ";
+	    cin>>recordno;
+	    search_rec(recordno);
+	    break;
+    case 2:
+	    /*For inserting a record */
+	    s1.in_rec();
+	    ofstream fout;
+	    fout.open("Contact_info",ios::out|ios::app|ios::binary);
+	    fout.write((char*)&s1,sizeof(s1));
+	    fout.close();
+	    break;
+    case 3:
+	    /*For deleting a record*/
+	    cout<<"Enter record number whose record is to be deleted :- ";
+	    cin>>recordno;
+	    cout<<"Details are :-\n";
+	    s1.out_rec(recordno);
+	    cout<<"Do you want to delete this record (y\n):- ";
+	    cin>>y;
+	    if(y=='Y'||y=='y')
+			del_rec(recordno);
+	    break;
+    case 4:
+	    cout<<"Enter record number whose record is to be modified :- ";
+	    cin>>recordno;
+	    modify_rec(recordno);
+	    cout<<"!!!Record successfully modified!!!";
+	    break;
+    case 5:
+	    exit(1);
+    default:
+	    clrscr();
+	    cout<<"!!!WRONG CHOICE!!!";
+	    goto start;
+  }
+  cout<<"\n1)Perform more tasks";
+  cout<<"\n2)Exit\n";
+  cout<<"Enter your choice :- ";
+  cin>>ch;
+  if(ch==1)
+  {
+		clrscr();
+		goto start;               //to repeat the same process again
+  }
+  else
+		exit(1);
+  getch();
+}
